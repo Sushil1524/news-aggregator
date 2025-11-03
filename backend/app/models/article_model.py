@@ -1,28 +1,28 @@
-import datetime
-from bson.objectid import ObjectId
+from pydantic import BaseModel, Field
+from typing import List, Optional
+from datetime import datetime
 
-def get_article_schema():
-    """
-    Returns the schema for a synthesized article document.
-    """
-    return {
-        'synthesized_title': {'type': 'string', 'required': True},
-        'synthesized_content': {'type': 'string', 'required': True},
-        'original_sources': {'type': 'list', 'schema': {'type': 'string'}}, # List of source URLs
-        'category': {'type': 'string', 'required': True},
-        'published_at': {'type': 'datetime', 'default': datetime.datetime.now(datetime.timezone.utc)},
-        'votes': {'type': 'integer', 'default': 0},
-        'comments': {
-            'type': 'list',
-            'schema': {
-                'type': 'dict',
-                'schema': {
-                    '_id': {'type': 'objectid', 'default': ObjectId()},
-                    'user_id': {'type': 'objectid', 'required': True},
-                    'username': {'type': 'string', 'required': True},
-                    'text': {'type': 'string', 'required': True},
-                    'created_at': {'type': 'datetime', 'default': datetime.datetime.now(datetime.timezone.utc)}
-                }
-            }
-        }
-    }
+class ArticleBase(BaseModel):
+    title: str
+    url: str
+    summary: Optional[str] = None
+    category: Optional[str] = None          # e.g., "Tech", "Politics"
+    tags: List[str] = []                    # Keywords
+    sentiment: Optional[str] = None         # "positive", "negative", "neutral"
+
+class ArticleCreate(ArticleBase):
+    content: str
+
+class ArticleDB(ArticleBase):
+    id: str = Field(..., alias="_id")
+    content: str
+    author_email: str                        # Linked to user
+    upvotes: int = 0
+    downvotes: int = 0
+    comments_count: int = 0
+    views: int = 0
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        validate_by_name = True

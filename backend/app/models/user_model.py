@@ -1,32 +1,60 @@
-import datetime
+# app/models/user_model.py
+from enum import Enum
+from pydantic import BaseModel, EmailStr, Field
+from datetime import datetime, date
+from typing import Optional, List, Dict
 
-def get_user_schema():
-    """
-    Returns the basic schema structure for a user document.
-    This is for validation and ensuring consistency.
-    """
-    return {
-        'email': {'type': 'string', 'required': True, 'unique': True},
-        'username': {'type': 'string', 'required': True},
-        'password': {'type': 'string', 'required': True}, # Stored as a hash
-        'created_at': {'type': 'datetime', 'default': datetime.datetime.now(datetime.timezone.utc)},
-        'gamification': {
-            'type': 'dict',
-            'schema': {
-                'points': {'type': 'integer', 'default': 0},
-                'streak': {'type': 'integer', 'default': 0},
-                'last_active_date': {'type': 'date', 'nullable': True}
-            }
-        }
-    }
+class Gamification(BaseModel):
+    points: int = 0
+    streak: int = 0
 
-def validate_user_data(data):
-    """
-    A simple validator for user data before insertion.
-    In a real app, you might use a more robust library like Cerberus or Marshmallow.
-    """
-    if not all(k in data for k in ['email', 'username', 'password']):
-        raise ValueError("Email, username, and password are required.")
-    if not isinstance(data.get('email'), str) or '@' not in data.get('email'):
-        raise ValueError("A valid email is required.")
-    return True
+class VocabCard(BaseModel):
+    word: str
+    meaning: Optional[str] = None
+    example: Optional[str] = None
+    added_at: datetime = Field(default_factory=datetime.utcnow)
+    level: int = 1  # for spaced repetition / learning progress
+
+class UserRole(str, Enum):
+    USER = "user"
+    ADMIN = "admin"
+
+class VocabProficiency(str, Enum):
+    BEGINNER = "beginner"
+    INTERMEDIATE = "intermediate"
+    ADVANCED = "advanced"
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    username: str  # unique username for each user
+    full_name: Optional[str] = None
+    dob: Optional[date] = None  # Date of Birth
+    vocab_proficiency: Optional[VocabProficiency] = VocabProficiency.BEGINNER
+    daily_practice_target: Optional[int] = Field(
+        10, description="Number of words user wants to practice daily"
+    )
+    news_preferences: Dict[str, bool] = Field(
+        default_factory=lambda: {
+            "Technology": True,
+            "Politics": True,
+            "Business": True,
+            "Health": True,
+            "Sports": True
+        },
+        description="User's preferences for news categories"
+    )
+    role: UserRole = Field(default=UserRole.USER, exclude=True)
+    gamification: Gamification = Gamification()
+    vocab_cards: List[VocabCard] = []  # for card-based vocab learning
+    bookmarks: List[str] = []  # list of bookmarked article IDs
+
+class TokenResponse(BaseModel): 
+    access_token: str 
+    refresh_token: str 
+    token_type: str = "bearer"
+
+class UserLogin(BaseModel): 
+    email: EmailStr 
+    username: str
+    password: str
