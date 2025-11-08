@@ -76,10 +76,6 @@ def get_article(article_id: str, request: Request):
     # increment global views
     increment_article_view(article_id)
 
-    # track only if user exists
-    if user:
-        analytics_service.track_article_read(user["_id"], article_id)
-
     return serialize_article(article)
 
 # ---------------------

@@ -1,5 +1,6 @@
 import redis
 from app.config.mongo import articles_collection
+from app.services.analytics_service import analytics_service
 from datetime import datetime
 from bson import ObjectId
 
@@ -14,19 +15,17 @@ USER_VIEW_KEY_PREFIX = "user_views:"     # per-user article reads for analytics
 # -----------------------------
 def increment_article_view(article_id: str, user_id: str | None = None):
     """
-    Increment the view count in Redis for batching.
-    Optionally track per-user reads.
+    Increment global article view count in Redis.
     """
-    # Global article views
+    print("Incrementing view for article:", article_id, "by user:", user_id)
     article_key = f"{VIEW_KEY_PREFIX}{article_id}"
     r.incr(article_key)
     r.expire(article_key, 3600 * 24)
 
-    # Per-user analytics
+    # Delegate user read tracking to analytics_service
     if user_id:
-        user_key = f"{USER_VIEW_KEY_PREFIX}{user_id}"
-        r.hset(user_key, article_id, datetime.utcnow().isoformat())
-        r.expire(user_key, 3600 * 24)
+        analytics_service.track_article_read(user_id, article_id)
+
 
 # -----------------------------
 # Flush Redis views to MongoDB
@@ -35,6 +34,7 @@ def flush_views_to_db():
     """
     Flush global article views to MongoDB.
     """
+    print("Flushing article views from Redis to MongoDB...")
     keys = r.keys(f"{VIEW_KEY_PREFIX}*")
     for key in keys:
         article_id = key.replace(VIEW_KEY_PREFIX, "")

@@ -66,6 +66,7 @@ class AnalyticsService:
         Uses Redis for batching per-user reads.
         Updates gamification points/streak in Supabase.
         """
+        print("Tracking article read:", user_id, article_id)
         now_iso = datetime.utcnow().isoformat()
         key = f"{USER_VIEW_KEY_PREFIX}{user_id}"
         r.hset(key, article_id, now_iso)
@@ -199,6 +200,4 @@ class AnalyticsService:
             "reading_history": analytics_doc.get("reading_history", [])
         }
 
-   
-# Singleton instance
 analytics_service = AnalyticsService()

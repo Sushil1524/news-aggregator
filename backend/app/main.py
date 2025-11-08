@@ -10,15 +10,16 @@ from app.services.analytics_scheduler import start_flusher_scheduler
 async def lifespan(app: FastAPI):
     # Startup: start the scheduler
     start_scheduler()
-    print("Scheduler started: fetching news every 15 minutes")
+    
     start_flusher_scheduler() 
-    print("Analytics flusher started: flushing views every 1 minutes")
+
     yield
+    
     # Shutdown: optional cleanup
     print("Shutting down application...")
 
 # app = FastAPI(title="Intelligent News Aggregator", lifespan=lifespan,docs_url=None, redoc_url=None, openapi_url=None)
-app = FastAPI(title="Intelligent News Aggregator")
+app = FastAPI(title="Intelligent News Aggregator", lifespan=lifespan)
 
 # CORS middleware
 app.add_middleware(

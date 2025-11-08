@@ -3,6 +3,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 import asyncio
 from app.services.news_pipeline import fetch_and_process_feeds
+from app.services.vocab_scheduler import refresh_daily_vocab
 
 # Expanded RSS feeds list
 feeds = [
@@ -11,7 +12,7 @@ feeds = [
     "https://www.engadget.com/rss.xml",
     "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
     "https://feeds.arstechnica.com/arstechnica/index"
-    # add indian
+    # add indian sources
 ]
 
 def run_asyncio_task(coro):
@@ -21,6 +22,8 @@ def run_asyncio_task(coro):
 def start_scheduler():
     scheduler = BackgroundScheduler()
     # Run every 15 minutes
+    scheduler.add_job(refresh_daily_vocab, "cron", hour=5, minute=0)
+    print("Scheduler started: refreshing daily vocab at 5:00 AM daily")
     scheduler.add_job(lambda: run_asyncio_task(fetch_and_process_feeds(feeds)), "interval", minutes=15)
-    scheduler.start()
     print(f"Scheduler started: fetching news from {len(feeds)} feeds every 15 minutes")
+    scheduler.start()
