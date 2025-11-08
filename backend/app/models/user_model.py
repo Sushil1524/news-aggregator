@@ -1,6 +1,6 @@
 # app/models/user_model.py
 from enum import Enum
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator, field_validator
 from datetime import datetime, date
 from typing import Optional, List, Dict
 
@@ -45,6 +45,8 @@ class UserCreate(BaseModel):
         description="User's preferences for news categories"
     )
     role: UserRole = Field(default=UserRole.USER, exclude=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
     gamification: Gamification = Gamification()
     vocab_cards: List[VocabCard] = []  # for card-based vocab learning
     bookmarks: List[str] = []  # list of bookmarked article IDs
@@ -54,7 +56,19 @@ class TokenResponse(BaseModel):
     refresh_token: str 
     token_type: str = "bearer"
 
-class UserLogin(BaseModel): 
-    email: EmailStr 
-    username: str
+class UserLogin(BaseModel):
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
     password: str
+
+    @field_validator("email", "username", mode="before")
+    def empty_to_none(cls, v):
+        if v == "":
+            return None
+        return v
+    
+    @model_validator(mode="after")
+    def validate_login_method(self):
+        if not self.email and not self.username:
+            raise ValueError("Either 'email' or 'username' must be provided.")
+        return self

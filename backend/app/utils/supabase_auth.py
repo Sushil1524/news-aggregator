@@ -14,6 +14,7 @@ load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+USERS_TABLE = "users"
 
 # JWT configuration
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
@@ -73,7 +74,7 @@ async def get_current_user_data(request: Request):
         raise HTTPException(status_code=401, detail="Invalid token payload")
 
     # Fetch user from Supabase
-    response = supabase.table("users").select("*").eq("email", user_email).execute()
+    response = supabase.table("users").select("*").eq("username", user_email).execute()
     if not response.data or len(response.data) == 0:
         raise HTTPException(status_code=401, detail="User not found")
 

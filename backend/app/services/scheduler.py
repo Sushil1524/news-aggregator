@@ -7,15 +7,11 @@ from app.services.news_pipeline import fetch_and_process_feeds
 # Expanded RSS feeds list
 feeds = [
     "https://www.theguardian.com/world/rss",
-    "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
     "https://feeds.bbci.co.uk/news/world/rss.xml",
-    "https://www.aljazeera.com/xml/rss/all.xml",
-    "https://feeds.npr.org/1001/rss.xml",
-    "https://rss.cnn.com/rss/edition.rss",
-    "https://www.reutersagency.com/feed/?best-topics=world",
     "https://www.engadget.com/rss.xml",
-    "https://www.wired.com/feed/rss",
+    "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
     "https://feeds.arstechnica.com/arstechnica/index"
+    # add indian
 ]
 
 def run_asyncio_task(coro):

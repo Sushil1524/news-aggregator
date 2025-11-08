@@ -29,4 +29,4 @@ def get_user_dashboard(user=Depends(get_current_user)):
     Fetch the analytics dashboard for the logged-in user.
     Combines Supabase gamification + MongoDB reading history.
     """
-    return analytics_service.get_user_dashboard_data(user["_id"])
+    return analytics_service.get_user_dashboard_data(user["id"])

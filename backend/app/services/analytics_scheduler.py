@@ -14,13 +14,13 @@ def start_flusher_scheduler():
     # --------------------------
     # Flush article views every 5 minutes
     # --------------------------
-    scheduler.add_job(flush_views_to_db, "interval", minutes=5, id="flush_views_job")
-
+    scheduler.add_job(flush_views_to_db, "interval", minutes=1, id="flush_views_job")
+    print("article views updated")
     # --------------------------
     # Flush user reads every 10 minutes
     # --------------------------
-    scheduler.add_job(analytics_service.flush_user_reads, "interval", minutes=10, id="flush_user_reads_job")
-
+    scheduler.add_job(analytics_service.flush_user_reads, "interval", minutes=1, id="flush_user_reads_job")
+    print("user views updated")
     # Start the scheduler
     scheduler.start()
     print("Analytics flusher scheduler started: flushing Redis views and user reads periodically")
