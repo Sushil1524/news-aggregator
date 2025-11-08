@@ -1,48 +1,47 @@
 # Core web framework
-fastapi==0.104.1
-uvicorn==0.24.0
+fastapi
+uvicorn
 
 # Environment
-python-dotenv==1.0.0
+python-dotenv
 
 # Databases / clients
-pymongo==4.6.0
-redis==4.7.0
-supabase==1.0.4
+pymongo
+redis
+supabase
 
 # Auth / security
-passlib==1.7.4
-bcrypt==4.0.1
-python-jose==3.3.0
-cryptography==41.0.3
+passlib
+bcrypt
+python-jose
+cryptography
+pydantic[email]
 
 # HTTP / async clients & parsing
-httpx==0.25.0
-requests==2.31.0
-aiohttp==3.8.6
-python-multipart==0.0.6
+httpx
+requests
+aiohttp
+python-multipart
+keybert
 
 # Scraping / feed parsing / HTML parsing
-beautifulsoup4==4.12.2
-lxml==4.9.3
-feedparser==6.0.10
+beautifulsoup4
+lxml
+feedparser
 
 # Data / ML / NLP
-numpy==1.26.1
-pandas==2.1.2
-nltk==3.8.1
-scikit-learn==1.3.2
+numpy
+panda
+nltk
+scikit-learn
 
 # Utilities & scheduling
-apscheduler==3.10.4
-aiosignal==1.3.1
+apscheduler
+aiosignal
 
 # Validation / serialization
-pydantic==2.4.2
+pydantic
 
 # Dev / testing
-pytest==7.4.3
-pytest-asyncio==0.21.1
-
-# Optional dev convenience
-colorama==0.4.6
+pytest
+pytest-asyncio
