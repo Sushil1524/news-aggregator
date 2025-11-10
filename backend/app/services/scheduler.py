@@ -9,9 +9,9 @@ from app.services.vocab_scheduler import refresh_daily_vocab
 feeds = [
     "https://www.theguardian.com/world/rss",
     "https://feeds.bbci.co.uk/news/world/rss.xml",
-    "https://www.engadget.com/rss.xml",
     "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
     "https://feeds.arstechnica.com/arstechnica/index"
+    "https://www.thehindu.com/news/international/feeder/default.rss",
     # add indian sources
 ]
 

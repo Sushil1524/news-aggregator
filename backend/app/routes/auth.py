@@ -1,6 +1,6 @@
 # app/routes/auth.py
 from datetime import datetime
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, status
 from app.models.user_model import UserCreate, UserLogin, TokenResponse, UserRole
 from app.utils.supabase_auth import (
     supabase,
@@ -9,6 +9,7 @@ from app.utils.supabase_auth import (
     create_access_token,
     create_refresh_token,
 )
+from app.utils.dependencies import get_current_user
 import json
 
 router = APIRouter()
@@ -89,3 +90,22 @@ def login(user: UserLogin):
         refresh_token=refresh_token
     )
 
+@router.get("/me")
+def get_current_user_data(current_user: dict = Depends(get_current_user)):
+    """
+    Fetch the current logged-in user's basic data from Supabase.
+    """
+    user_id = current_user.get("id")
+    if not user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token or user ID.")
+
+    response = supabase.table("users").select("*").eq("id", user_id).execute()
+
+    if not response.data:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Return only basic data (filtering sensitive fields if needed)
+    user = response.data[0]
+    user.pop("password", None)
+    user.pop("refresh_token", None)
+    return {"user": user}

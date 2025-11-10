@@ -1,6 +1,7 @@
 # app/config/mongo.py
 
 from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 import os
 from dotenv import load_dotenv
 

@@ -54,27 +54,24 @@ def get_articles(
 # Get Single Article
 # ---------------------
 @router.get("/{article_id}", response_model=ArticleDB)
-def get_article(article_id: str, request: Request):
-    # --- fetch article ---
+async def get_article(article_id: str, request: Request):
     article = articles_collection.find_one({"_id": ObjectId(article_id)})
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
 
-    # --- try optional user ---
     user = None
     try:
-        # manually parse token if present
         auth = request.headers.get("Authorization")
         if auth:
             scheme, token = get_authorization_scheme_param(auth)
             if scheme.lower() == "bearer":
                 from app.utils.dependencies import get_current_user
-                user = get_current_user(token)
-    except Exception as e:
-        user = None  # ignore auth errors for public access
+                user = await get_current_user(token)
+    except Exception:
+        user = None  # ignore errors for public access
 
-    # increment global views
-    increment_article_view(article_id)
+    # increment views
+    increment_article_view(article_id, getattr(user, "id", None))
 
     return serialize_article(article)
 

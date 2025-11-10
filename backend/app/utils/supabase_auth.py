@@ -53,7 +53,6 @@ def verify_token(token: str):
 # ---------------------------
 # Added method for FastAPI
 # ---------------------------
-# app/utils/supabase_auth.py
 async def get_current_user_data(request: Request):
     """
     FastAPI dependency to extract JWT from Authorization header,

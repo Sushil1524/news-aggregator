@@ -27,37 +27,49 @@ ALL_WORDS = load_words()
 def refresh_daily_vocab():
     """Runs once daily: refresh vocab sets and handle streaks."""
     today = date.today()
-
     print(f"[Vocab Scheduler] Running daily refresh for {today}...")
 
-    # Fetch all users with vocab data
-    users = supabase.table("users").select("id, vocab_cards, daily_practice_target, vocab_proficiency, gamification").execute()
+    # Fetch all users with vocab-related fields
+    users = supabase.table("users").select(
+        "id, vocab_cards, daily_practice_target, vocab_proficiency, gamification"
+    ).execute()
+
     if not users.data:
         print("[Vocab Scheduler] No users found.")
         return
 
     for user in users.data:
-        vocab_cards = user.get("vocab_cards", []) or []
-        gamification = user.get("gamification", {"points": 0, "streak": 0})
-        daily_target = user.get("daily_practice_target", 10)
-        proficiency = user.get("vocab_proficiency", "beginner")
+        vocab_cards = user.get("vocab_cards") or []
+        gamification = user.get("gamification") or {"points": 0, "streak": 0}
+        daily_target = user.get("daily_practice_target") or 10
+        proficiency = user.get("vocab_proficiency") or "beginner"
 
-        # 1️⃣ Check streak maintenance
+        # Ensure gamification fields always exist
+        gamification.setdefault("points", 0)
+        gamification.setdefault("streak", 0)
+
+        # --- 1️⃣ Streak maintenance ---
         last_practice_dates = [
             date.fromisoformat(c["last_practiced"])
             for c in vocab_cards
             if c.get("last_practiced")
         ]
+
         if last_practice_dates:
             last_day = max(last_practice_dates)
-            if (today - last_day).days > 1:
-                # Missed a day → reset streak
+            day_gap = (today - last_day).days
+            if day_gap > 1:
+                # Missed more than a day → reset streak
                 gamification["streak"] = 0
+            elif day_gap == 1:
+                # Practiced yesterday → maintain streak
+                gamification["streak"] += 1
+            # if day_gap == 0 → already practiced today (no change)
         else:
-            # No practice yet
+            # No practice yet → start from 0
             gamification["streak"] = 0
 
-        # 2️⃣ Prepare new vocab if user has fewer than daily target due today
+        # --- 2️⃣ New vocab preparation ---
         due_today = [
             c for c in vocab_cards
             if c.get("next_review_date")
@@ -67,28 +79,32 @@ def refresh_daily_vocab():
         if len(due_today) < daily_target:
             needed = daily_target - len(due_today)
             existing_words = {c["word"] for c in vocab_cards}
-            new_words = random.sample(
-                [w for w in ALL_WORDS if w not in existing_words],
-                needed
-            )
+            available_words = [w for w in ALL_WORDS if w not in existing_words]
 
-            for w in new_words:
-                vocab_cards.append({
-                    "word": w,
-                    "meaning": None,
-                    "example": None,
-                    "added_at": datetime.utcnow().isoformat(),
-                    "level": 1,
-                    "proficiency": proficiency,
-                    "next_review_date": today.isoformat(),
-                    "last_practiced": None,
-                    "is_learned": False
-                })
+            # Only sample if enough new words exist
+            if available_words:
+                new_words = random.sample(available_words, min(needed, len(available_words)))
 
-        # 3️⃣ Push updates to Supabase
-        supabase.table("users").update({
-            "vocab_cards": vocab_cards,
-            "gamification": gamification
-        }).eq("id", user["id"]).execute()
+                for w in new_words:
+                    vocab_cards.append({
+                        "word": w,
+                        "meaning": None,
+                        "example": None,
+                        "added_at": datetime.utcnow().isoformat(),
+                        "level": 1,
+                        "proficiency": proficiency,
+                        "next_review_date": today.isoformat(),
+                        "last_practiced": None,
+                        "is_learned": False
+                    })
+
+        # --- 3️⃣ Push updates to Supabase ---
+        try:
+            supabase.table("users").update({
+                "vocab_cards": vocab_cards,
+                "gamification": gamification
+            }).eq("id", user["id"]).execute()
+        except Exception as e:
+            print(f"[Vocab Scheduler] ❌ Failed to update user {user['id']}: {e}")
 
     print("[Vocab Scheduler] ✅ Daily vocab refresh complete!")
