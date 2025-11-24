@@ -2,25 +2,16 @@ from bson import ObjectId
 from app.utils.supabase_auth import supabase
 from app.config.mongo import articles_collection, analytics_collection
 import redis
-import json, os, dotenv
+import json, os
+from dotenv import load_dotenv
+
+# Ensure environment variables from a .env file are loaded at import time
+load_dotenv()
+from app.utils.redis_client import get_redis_client
 from datetime import datetime, timedelta, date
 
-# Redis connection
-REDIS_URL = os.getenv("UPSTASH_REDIS_URL") or os.getenv("REDIS_URL")
-try:
-    if REDIS_URL:
-        # redis.from_url handles rediss:// and redis:// schemes
-        r = redis.from_url(REDIS_URL, decode_responses=True)
-    else:
-        r = redis.Redis(
-            host=os.getenv("REDIS_HOST", "localhost"),
-            port=int(os.getenv("REDIS_PORT", 6379)),
-            db=int(os.getenv("REDIS_DB", 0)),
-            decode_responses=True,
-        )
-except Exception as e:
-    print(f"Redis connection failed ({e}), falling back to localhost")
-    r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+# Redis client (may be Upstash REST-based)
+r = get_redis_client()
 
 USER_VIEW_KEY_PREFIX = "user_views:"
 
@@ -171,92 +162,116 @@ class AnalyticsService:
         """
         Flush per-user article reads from Redis to MongoDB and update gamification in Supabase.
         """
-        keys = r.keys(f"{USER_VIEW_KEY_PREFIX}*")
-        for key in keys:
-            user_id = key.replace(USER_VIEW_KEY_PREFIX, "")
-            article_views = r.hgetall(key)
-            if not article_views:
-                continue
-
-            # Convert article IDs to string ids and timestamps to datetime
-            updates = []
-            for a_id, payload in article_views.items():
-                try:
-                    data = json.loads(payload)
-                    ts = data.get("ts")
-                    reading_time = data.get("reading_time")
-                except Exception:
-                    ts = None
-                    reading_time = None
-                try:
-                    ts_dt = datetime.fromisoformat(ts) if ts else datetime.utcnow()
-                except Exception:
-                    ts_dt = datetime.utcnow()
-                updates.append({"article_id_str": str(a_id), "timestamp": ts_dt, "reading_time": reading_time})
-
-            if not updates:
-                r.delete(key)
-                continue
-
-            # Update MongoDB analytics (store string ids to keep responses JSON serializable)
+        keys = r.keys(f"{USER_VIEW_KEY_PREFIX}*") or []
+        for key in list(keys):
             try:
-                articles_ids = [u["article_id_str"] for u in updates if u.get("article_id_str")]
-                reading_history_push = [{"article_id": u["article_id_str"], "timestamp": u["timestamp"], "reading_time_seconds": u.get("reading_time")} for u in updates]
-                analytics_collection.update_one(
-                    {"user_id": user_id},
-                    {
-                        "$addToSet": {"articles_read_ids": {"$each": articles_ids}},
-                        "$push": {"reading_history": {"$each": reading_history_push}},
-                        "$set": {"last_updated": datetime.utcnow()}
-                    },
-                    upsert=True
-                )
+                # normalize
+                if isinstance(key, bytes):
+                    key = key.decode('utf-8')
+                if not key.startswith(USER_VIEW_KEY_PREFIX):
+                    continue
+
+                user_id = key[len(USER_VIEW_KEY_PREFIX):]
+                article_views = r.hgetall(key) or {}
+                if not article_views:
+                    # nothing to flush; drop stale key
+                    try:
+                        r.delete(key)
+                    except Exception:
+                        pass
+                    continue
+
+                # Convert article IDs to string ids and timestamps to datetime
+                updates = []
+                for a_id, payload in article_views.items():
+                    try:
+                        data = json.loads(payload)
+                        ts = data.get("ts")
+                        reading_time = data.get("reading_time")
+                    except Exception:
+                        ts = None
+                        reading_time = None
+                    try:
+                        ts_dt = datetime.fromisoformat(ts) if ts else datetime.utcnow()
+                    except Exception:
+                        ts_dt = datetime.utcnow()
+                    updates.append({"article_id_str": str(a_id), "timestamp": ts_dt, "reading_time": reading_time})
+
+                if not updates:
+                    # nothing to persist
+                    continue
+
+                # Persist to MongoDB; do not delete Redis key until persistence succeeds
+                try:
+                    articles_ids = [u["article_id_str"] for u in updates if u.get("article_id_str")]
+                    reading_history_push = [{"article_id": u["article_id_str"], "timestamp": u["timestamp"], "reading_time_seconds": u.get("reading_time")} for u in updates]
+                    analytics_collection.update_one(
+                        {"user_id": user_id},
+                        {
+                            "$addToSet": {"articles_read_ids": {"$each": articles_ids}},
+                            "$push": {"reading_history": {"$each": reading_history_push}},
+                            "$set": {"last_updated": datetime.utcnow()}
+                        },
+                        upsert=True
+                    )
+                except Exception as e:
+                    print(f"[Analytics] Failed to update Mongo analytics for user {user_id}: {e}")
+                    # do not remove key so the scheduler can retry
+                    continue
+
+                # ----------------------
+                # Update gamification in Supabase (merge reading_history without duplicates)
+                # ----------------------
+                try:
+                    resp = supabase.table("users").select("gamification").eq("id", user_id).single().execute()
+                    if resp.data:
+                        current_gam = resp.data.get("gamification") or {}
+                        if isinstance(current_gam, str):
+                            try:
+                                current_gam = json.loads(current_gam)
+                            except Exception:
+                                current_gam = {}
+                    else:
+                        current_gam = {}
+
+                    if not isinstance(current_gam, dict):
+                        current_gam = {}
+
+                    existing_history = current_gam.get("reading_history", [])
+                    if not isinstance(existing_history, list):
+                        existing_history = []
+
+                    # Merge without duplicates, preserve timestamps (prefer existing)
+                    existing_ids = {str(entry.get("article_id")) for entry in existing_history if entry.get("article_id")}
+                    new_added = 0
+                    for u in updates:
+                        a_id = u["article_id_str"]
+                        if a_id not in existing_ids:
+                            existing_history.append({"article_id": a_id, "timestamp": u["timestamp"].isoformat(), "reading_time_seconds": u.get("reading_time")})
+                            existing_ids.add(a_id)
+                            new_added += 1
+
+                    current_gam["reading_history"] = existing_history
+                    current_gam["total_articles_read"] = len(existing_ids)
+
+                    # streak: simple update based on distinct new reads
+                    current_gam["streak"] = current_gam.get("streak", 0) + new_added
+                    current_gam["last_read_date"] = datetime.utcnow().isoformat()
+
+                    supabase.table("users").update({"gamification": current_gam}).eq("id", user_id).execute()
+                except Exception as e:
+                    print(f"[Analytics] Failed to flush gamification for user {user_id}: {e}")
+                    # We already updated Mongo; avoid deleting Redis key so it can be retried
+                    continue
+
+                # Clear Redis key only after successful Mongo + Supabase updates
+                try:
+                    r.delete(key)
+                except Exception as e:
+                    print(f"[Analytics] Failed to delete Redis key {key} after flushing: {e}")
+                    # Not critical; data persisted
             except Exception as e:
-                print(f"[Analytics] Failed to update Mongo analytics for user {user_id}: {e}")
-
-            # ----------------------
-            # Update gamification in Supabase (merge reading_history without duplicates)
-            # ----------------------
-            try:
-                resp = supabase.table("users").select("gamification").eq("id", user_id).single().execute()
-                if resp.data:
-                    current_gam = resp.data.get("gamification") or {}
-                    if isinstance(current_gam, str):
-                        try:
-                            current_gam = json.loads(current_gam)
-                        except Exception:
-                            current_gam = {}
-                else:
-                    current_gam = {}
-
-                if not isinstance(current_gam, dict):
-                    current_gam = {}
-
-                existing_history = current_gam.get("reading_history", [])
-                if not isinstance(existing_history, list):
-                    existing_history = []
-
-                # Merge without duplicates, preserve timestamps (prefer existing)
-                existing_ids = {str(entry.get("article_id")) for entry in existing_history if entry.get("article_id")}
-                for u in updates:
-                    a_id = u["article_id_str"]
-                    if a_id not in existing_ids:
-                        existing_history.append({"article_id": a_id, "timestamp": u["timestamp"].isoformat(), "reading_time_seconds": u.get("reading_time")})
-                        existing_ids.add(a_id)
-
-                current_gam["reading_history"] = existing_history
-                current_gam["total_articles_read"] = len(existing_ids)
-
-                # streak: simple update based on distinct new reads; you can refine with date logic
-                current_gam["streak"] = current_gam.get("streak", 0) + len([u for u in updates if u["article_id_str"] not in existing_ids])
-                current_gam["last_read_date"] = datetime.utcnow().isoformat()
-
-                supabase.table("users").update({"gamification": current_gam}).eq("id", user_id).execute()
-            except Exception as e:
-                print(f"[Analytics] Failed to flush gamification for user {user_id}: {e}")
-
-            # Clear Redis key
-            r.delete(key)
+                print(f"[Analytics] Unexpected error while flushing key {key}: {e}")
 
     def get_user_dashboard_data(self, user_id: str):
         """

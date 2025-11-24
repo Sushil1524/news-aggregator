@@ -1,30 +1,18 @@
 import os
-import redis
+from dotenv import load_dotenv
+
+# Ensure environment variables from a .env file are loaded at import time
+load_dotenv()
+from app.utils.redis_client import get_redis_client
 from app.config.mongo import articles_collection
 from app.services.analytics_service import analytics_service
 from datetime import datetime
 from bson import ObjectId
 
-# Redis connection: prefer Upstash TLS URL (set UPSTASH_REDIS_URL or REDIS_URL),
-# fallback to local Redis.
-REDIS_URL = os.getenv("UPSTASH_REDIS_URL") or os.getenv("REDIS_URL")
-try:
-    if REDIS_URL:
-        # redis.from_url handles rediss:// and redis:// schemes
-        r = redis.from_url(REDIS_URL, decode_responses=True)
-    else:
-        r = redis.Redis(
-            host=os.getenv("REDIS_HOST", "localhost"),
-            port=int(os.getenv("REDIS_PORT", 6379)),
-            db=int(os.getenv("REDIS_DB", 0)),
-            decode_responses=True,
-        )
-except Exception as e:
-    print(f"Redis connection failed ({e}), falling back to localhost")
-    r = redis.Redis(host="localhost", port=6379, db=0, decode_responses=True)
+# Redis client (may be Upstash REST-based)
+r = get_redis_client()
 
 VIEW_KEY_PREFIX = "article_views:"       # global article views
-USER_VIEW_KEY_PREFIX = "user_views:"     # per-user article reads for analytics
 
 # -----------------------------
 # Increment view counts
@@ -59,11 +47,34 @@ def flush_views_to_db():
     Flush global article views to MongoDB.
     """
     print("Flushing article views from Redis to MongoDB...")
-    keys = r.keys(f"{VIEW_KEY_PREFIX}*")
-    for key in keys:
-        article_id = key.replace(VIEW_KEY_PREFIX, "")
-        count = int(r.get(key))
-        if count > 0:
+    keys = r.keys(f"{VIEW_KEY_PREFIX}*") or []
+    # Ensure we only process keys that actually start with the article prefix
+    for key in list(keys):
+        try:
+            # Some clients may return bytes; normalize to str
+            if isinstance(key, bytes):
+                key = key.decode('utf-8')
+            if not key.startswith(VIEW_KEY_PREFIX):
+                continue
+
+            article_id = key[len(VIEW_KEY_PREFIX):]
+
+            # Safely get count (may return None or string)
+            raw = r.get(key)
+            try:
+                count = int(raw) if raw is not None else 0
+            except Exception:
+                count = 0
+
+            if count <= 0:
+                # nothing to flush; remove stale key to avoid future noise
+                try:
+                    r.delete(key)
+                except Exception:
+                    pass
+                continue
+
+            # Persist to MongoDB; only delete Redis key if DB update succeeds
             try:
                 articles_collection.update_one(
                     {"_id": ObjectId(article_id)},
@@ -71,4 +82,14 @@ def flush_views_to_db():
                 )
             except Exception as e:
                 print(f"Failed to flush views for {article_id}: {e}")
-            r.delete(key)
+                # don't delete the Redis key so the scheduler can retry later
+                continue
+
+            # Delete the Redis key only after successful DB update
+            try:
+                r.delete(key)
+            except Exception as e:
+                print(f"Failed to delete Redis key {key} after flushing: {e}")
+                # Not critical; DB already updated
+        except Exception as e:
+            print(f"Unexpected error while flushing key {key}: {e}")
