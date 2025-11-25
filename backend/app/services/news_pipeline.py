@@ -30,7 +30,8 @@ async def process_raw_article(raw_article):
         return None
 
     raw_article["content"] = scraped["content"]
-    raw_article["image_url"] = scraped.get("image_url")
+    # Prioritize RSS image, fallback to scraped image
+    raw_article["image_url"] = raw_article.get("image_url") or scraped.get("image_url")
     raw_article["source_url"] = raw_article["url"]
 
     # Process locally instead of Gemini
@@ -135,3 +136,47 @@ async def fetch_and_process_feeds(feeds: list):
     )
 
     return results
+
+from app.clients.newsdata_client import NewsDataClient
+
+async def fetch_and_process_newsdata(api_key: str):
+    """
+    Fetches breaking news from NewsData.io and processes them.
+    """
+    print("🔄 Fetching breaking news from NewsData.io...")
+    client = NewsDataClient(api_key)
+    
+    # Fetch from a few key categories to get a mix
+    categories = ["technology", "science", "business", "health"]
+    all_articles = []
+    
+    for cat in categories:
+        articles = await asyncio.to_thread(client.fetch_breaking_news, category=cat)
+        all_articles.extend(articles)
+        
+    print(f"✅ Fetched {len(all_articles)} articles from NewsData.io")
+    
+    tasks = []
+    new_count = 0
+    
+    for article in all_articles:
+        # Skip if article already exists (by URL)
+        if raw_articles_collection.find_one({"url": article["url"]}):
+            continue
+
+        # Ensure created_at is datetime
+        if isinstance(article.get("created_at"), str):
+            try:
+                article["created_at"] = datetime.fromisoformat(article["created_at"])
+            except:
+                article["created_at"] = datetime.utcnow()
+                
+        raw_articles_collection.insert_one(article)
+        tasks.append(process_raw_article(article))
+        new_count += 1
+        
+    print(f"✅ {new_count} new NewsData articles queued for processing")
+
+    if tasks:
+        await asyncio.gather(*tasks, return_exceptions=True)
+
