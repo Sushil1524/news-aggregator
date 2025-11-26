@@ -1,5 +1,5 @@
 // API configuration and utilities
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = "https://verbose-goggles-r47gvjx44j952pvwj-8000.app.github.dev";
 
 // Auth types
 export type UserCreate = {
