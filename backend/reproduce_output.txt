@@ -1,0 +1,136 @@
+Testing feed: https://www.theguardian.com/world/rss
+Found 45 articles.
+Article 1:
+  Title: UK rejects Nigerian request to deport former politican jailed for organ trafficking
+  Image URL: None
+--------------------
+Article 2:
+  Title: Ethiopian volcano erupts for first time in 12,000 years
+  Image URL: None
+--------------------
+Article 3:
+  Title: Cyril Ramaphosa closes G20 summit after US boycott and handover row
+  Image URL: None
+--------------------
+========================================
+Testing feed: https://feeds.bbci.co.uk/news/world/rss.xml
+Found 27 articles.
+Article 1:
+  Title: Ukraine calls for Trump-Zelensky meeting in US this week
+  Image URL: https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/4321/live/bfd45a10-c9f9-11f0-9fb5-5f3a3703a365.jpg
+--------------------
+Article 2:
+  Title: Controversial US-backed Gaza Humanitarian Foundation ends aid operations
+  Image URL: https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/2f11/live/a0dcf2d0-c9df-11f0-8c06-f5d460985095.jpg
+--------------------
+Article 3:
+  Title: Trump says he will visit China in April after call with Xi
+  Image URL: https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/eaca/live/d0746f10-c97a-11f0-9a12-2dc0b71304e7.jpg
+--------------------
+========================================
+Testing feed: https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+Found 59 articles.
+Article 1:
+  Title: As Trump Pushes to End Ukraine War, Europe Toils to Have a Say
+  Image URL: https://static01.nyt.com/images/2025/11/25/multimedia/25int-ukraine-europe-assess-05-lpqb/25int-ukraine-europe-assess-05-lpqb-mediumSquareAt3X.jpg
+--------------------
+Article 2:
+  Title: Russia Bombards Kyiv Even as Ukraine Claims Progress in Peace Talks
+  Image URL: https://static01.nyt.com/images/2025/11/25/multimedia/25int-ukraine-attack-pjcv/25int-ukraine-attack-pjcv-mediumSquareAt3X.jpg
+--------------------
+Article 3:
+  Title: Auto Industry Was Warned For Years of Poisoning, Sickness From Car Batteries
+  Image URL: https://static01.nyt.com/images/2025/11/07/multimedia/00int-lead-batteries-companies-6-wcmp/00int-lead-batteries-companies-6-wcmp-mediumSquareAt3X.jpg
+--------------------
+========================================
+Testing feed: https://feeds.arstechnica.com/arstechnica/index
+Found 20 articles.
+Article 1:
+  Title: Formation of oceans within icy moons could cause the waters to boil
+  Image URL: https://cdn.arstechnica.net/wp-content/uploads/2025/11/image-3-990x648.jpeg
+--------------------
+Article 2:
+  Title: Mushroom foragers collect 160 species for food, medicine, art, and science
+  Image URL: https://cdn.arstechnica.net/wp-content/uploads/2025/11/GettyImages-1860048338-1152x648.jpg
+--------------------
+Article 3:
+  Title: Anthropic introduces cheaper, more powerful, more efficient Opus 4.5 model
+  Image URL: https://cdn.arstechnica.net/wp-content/uploads/2025/11/Screenshot-2025-11-24-at-4.57.28-PM-1152x648.png
+--------------------
+========================================
+Testing feed: https://www.thehindu.com/news/international/feeder/default.rss
+Found 100 articles.
+Article 1:
+  Title: Israel approves proposal to bring all remaining 5,800 Jews from Northeast India
+  Image URL: https://th-i.thgim.com/public/incoming/7dogbm/article70321513.ece/alternates/LANDSCAPE_1200/2150_28-11-2017_17-26-17_MENASHE_GROUNDZERO-24112017_01.JPG
+--------------------
+Article 2:
+  Title: Harassment of Indian woman at Shanghai airport: ‘Whole process according to laws and regulations,’ says China denying allegation
+  Image URL: https://th-i.thgim.com/public/incoming/87s2vb/article70321154.ece/alternates/LANDSCAPE_1200/TH24-Vijaita-IGSPF7BS5H.3.jpg.jpg
+--------------------
+Article 3:
+  Title: U.S. and Russia hold peace talks in Abu Dhabi as missiles pound Kyiv
+  Image URL: https://th-i.thgim.com/public/incoming/1o3zqd/article70320983.ece/alternates/LANDSCAPE_1200/APTOPIX_Russia_Ukraine_War_10481.jpg
+--------------------
+========================================
+Testing feed: https://www.theverge.com/rss/index.xml
+Found 10 articles.
+Article 1:
+  Title: Huawei Mate 80 Pro Max has the world’s brightest phone screen
+  Image URL: https://platform.theverge.com/wp-content/uploads/sites/2/2025/11/huawei-mate-80-pro-max-dual-layer-oled.jpg?quality=90&strip=all&crop=0,0,100,100
+--------------------
+Article 2:
+  Title: You won’t want to hide Ikea’s colorful new Bluetooth speakers
+  Image URL: https://platform.theverge.com/wp-content/uploads/sites/2/2025/11/ikea_bluetooth_speakers1.jpg?quality=90&strip=all&crop=0,0,100,100
+--------------------
+Article 3:
+  Title: Large language mistake
+  Image URL: https://platform.theverge.com/wp-content/uploads/sites/2/2025/11/258108_language_is_not_intelligence_CVirginia37.jpg?quality=90&strip=all&crop=0,0,100,100
+--------------------
+========================================
+Testing feed: https://www.wired.com/feed/rss
+Found 50 articles.
+Article 1:
+  Title: He Hunted Alleged Groomers on Roblox. Then the Company Banned Him
+  Image URL: https://media.wired.com/photos/68a62f59cd281342a1835aef/master/pass/Roblox-Hunter-Culture-RENDER_-Players-on-Roblox.jpg
+--------------------
+Article 2:
+  Title: LG UltraFine Evo 6K 32-inch Monitor Review: More Pixels, Please
+  Image URL: https://media.wired.com/photos/6925263b134f2871d393a299/master/pass/Review-%20LG%20UltraFine%20Evo%206K%2032-inch%20Monitor.png
+--------------------
+Article 3:
+  Title: The Best Mushroom Coffee, WIRED Tested and Reviewed (2025)
+  Image URL: https://media.wired.com/photos/68422670b6a5ae04b97cb39e/master/pass/Best%20Mushroom%20Coffee%20(update)_.png
+--------------------
+========================================
+Testing feed: http://feeds.bbci.co.uk/news/technology/rss.xml
+Found 42 articles.
+Article 1:
+  Title: Ofcom vows to name and shame platforms over online sexism
+  Image URL: https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/c52a/live/c4e21fa0-c9e6-11f0-993d-ed000479df42.jpg
+--------------------
+Article 2:
+  Title: Cryptology firm cancels elections after losing encryption key
+  Image URL: https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/7476/live/72c3b5f0-c9f3-11f0-bd31-8fd3ec515046.jpg
+--------------------
+Article 3:
+  Title: Scammers hacked her phone and stole thousands - so how did they get her details?
+  Image URL: https://ichef.bbci.co.uk/ace/standard/240/cpsprodpb/9acc/live/a3e62480-c979-11f0-8c06-f5d460985095.jpg
+--------------------
+========================================
+Testing feed: https://techcrunch.com/feed/
+Found 20 articles.
+TechCrunch Keys: dict_keys(['title', 'title_detail', 'links', 'link', 'authors', 'author', 'author_detail', 'published', 'published_parsed', 'tags', 'id', 'guidislink', 'summary', 'summary_detail'])
+Article 1:
+  Title: India’s gig workers win legal status, but access to social security remains elusive
+  Image URL: None
+--------------------
+Article 2:
+  Title: Google teams up with Accel to hunt for India’s next AI breakouts
+  Image URL: None
+--------------------
+Article 3:
+  Title: Altman describes OpenAI’s forthcoming AI device as more peaceful and calm than the iPhone
+  Image URL: None
+--------------------
+========================================

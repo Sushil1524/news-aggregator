@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 # from app.routes import auth, articles, comments, vocab, ai_tools
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth, article, comments, bookmarks, admin, analytics, vocab
+from app.routes import auth, article, comments, bookmarks, admin, analytics, vocab, finance
 from contextlib import asynccontextmanager
 from app.services.scheduler import start_scheduler
 from app.services.analytics_scheduler import start_flusher_scheduler
@@ -38,6 +38,7 @@ app.include_router(bookmarks.router, prefix="/bookmarks", tags=["Bookmarks"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
 app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])   
 app.include_router(vocab.router, prefix="/vocab", tags=["vocab"])
+app.include_router(finance.router, prefix="/finance", tags=["finance"])
 # app.include_router(ai_tools.router, prefix="/ai", tags=["ai_tools"])
 
 @app.get("/")
