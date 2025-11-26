@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Light theme (New) */
+    --background: 220 14% 96%; /* #f3f4f6 */
+    --foreground: 215 28% 17%; /* #1f2937 */
+
+    --surface: 0 0% 100%; /* #ffffff */
+    --surface-variant: 220 14% 96%;
+    --on-surface: 215 28% 17%;
+    --on-surface-variant: 215 16% 47%;
+
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 215 28% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+
+    --primary: 191 100% 42%;
+    --primary-foreground: 217 33% 6%;
+    --primary-container: 191 100% 85%;
+    --on-primary-container: 191 100% 15%;
+
+    --secondary: 174 62% 47%;
+    --secondary-foreground: 217 33% 6%;
+    --secondary-container: 174 62% 85%;
+    --on-secondary-container: 174 50% 15%;
+
+    --tertiary: 262 52% 57%;
+    --tertiary-foreground: 217 33% 6%;
+
+    --muted: 220 14% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --accent: 191 100% 42%;
+    --accent-foreground: 217 33% 6%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 191 100% 42%;
+
+    --radius: 0.5rem;
+    
+    /* State layers */
+    --state-layer-opacity: 0.08;
+    --hover-layer-opacity: 0.08;
+    
+    /* Elevation shadows - Light theme */
+    --elevation-1: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --elevation-2: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --elevation-3: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --elevation-4: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(191 100% 42%) 0%, hsl(174 62% 47%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 14% 96%) 100%);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 215 28% 17%;
+    --sidebar-primary: 191 100% 42%;
+    --sidebar-primary-foreground: 217 33% 6%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 215 28% 17%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 191 100% 42%;
+  }
+
+  .dark {
+    /* Dark theme - IntelliNews inspired (Original) */
+    --background: 217 33% 6%;
+    --foreground: 0 0% 98%;
+
+    --surface: 217 28% 8%;
+    --surface-variant: 217 25% 10%;
+    --on-surface: 0 0% 98%;
+    --on-surface-variant: 220 9% 65%;
+
+    --card: 217 28% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 217 28% 8%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 191 100% 42%;
+    --primary-foreground: 217 33% 6%;
+    --primary-container: 191 100% 15%;
+    --on-primary-container: 191 100% 85%;
+
+    --secondary: 174 62% 47%;
+    --secondary-foreground: 217 33% 6%;
+    --secondary-container: 174 50% 15%;
+    --on-secondary-container: 174 62% 85%;
+
+    --tertiary: 262 52% 57%;
+    --tertiary-foreground: 217 33% 6%;
+
+    --muted: 217 25% 15%;
+    --muted-foreground: 220 9% 55%;
+
+    --accent: 191 100% 42%;
+    --accent-foreground: 217 33% 6%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 217 25% 16%;
+    --input: 217 25% 16%;
+    --ring: 191 100% 42%;
+    
+    --elevation-1: 0 1px 2px 0 hsl(0 0% 0% / 0.4);
+    --elevation-2: 0 2px 4px 0 hsl(0 0% 0% / 0.5), 0 1px 2px -1px hsl(0 0% 0% / 0.5);
+    --elevation-3: 0 4px 8px -1px hsl(0 0% 0% / 0.6), 0 2px 4px -2px hsl(0 0% 0% / 0.6);
+    --elevation-4: 0 10px 20px -3px hsl(0 0% 0% / 0.7), 0 4px 6px -4px hsl(0 0% 0% / 0.7);
+    
+    --gradient-primary: linear-gradient(135deg, hsl(191 100% 42%) 0%, hsl(174 62% 47%) 100%);
+    --gradient-surface: linear-gradient(180deg, hsl(217 28% 8%) 0%, hsl(217 25% 10%) 100%);
+    --sidebar-background: 217 28% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 191 100% 42%;
+    --sidebar-primary-foreground: 217 33% 6%;
+    --sidebar-accent: 217 25% 12%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 217 25% 16%;
+    --sidebar-ring: 191 100% 42%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
