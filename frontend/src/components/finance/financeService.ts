@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000/finance'; // Adjust if needed
+const API_URL = 'https://verbose-goggles-r47gvjx44j952pvwj-8000.app.github.dev/finance'; // Adjust if needed
 
 export interface MarketIndex {
     symbol: string;
